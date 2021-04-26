@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const { User } = require('../../models');
 const { hashPassword, comparePassword } = require('../utils/hashing');
+const { generateAccessToken } = require('../utils/jwt');
 /**
  * Handling user register
  * @param {Request} req
@@ -34,12 +35,14 @@ exports.register = async (req, res) => {
         email,
       },
     });
+
     if (user) {
       return res.status(400).send({
         status: 'error',
         message: 'resource has already exist',
       });
     }
+
     const hashedPassword = await hashPassword(password);
 
     const createdUser = await User.create({
@@ -48,6 +51,8 @@ exports.register = async (req, res) => {
       password: hashedPassword,
     });
 
+    const accessToken = generateAccessToken({ id: createdUser.id });
+
     return res.status(200).send({
       status: 'success',
       message: 'resource has been successfully created',
@@ -55,11 +60,12 @@ exports.register = async (req, res) => {
         user: {
           fullName: createdUser.fullName,
           email: createdUser.email,
-          password: createdUser.password,
+          token: accessToken,
         },
       },
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: 'error',
       message: 'internal server error',
@@ -82,12 +88,12 @@ exports.login = async (req, res) => {
         email,
       },
       attributes: {
-        exclude: ['password', 'createdAt', 'updatedAt'],
+        exclude: ['createdAt', 'updatedAt'],
       },
     });
 
     if (user) {
-      const isMatching = comparePassword(password, user.password);
+      const isMatching = await comparePassword(password, user.password);
 
       if (!isMatching) {
         return res.status(400).send({
@@ -95,10 +101,19 @@ exports.login = async (req, res) => {
           message: 'your credentials is not valid',
         });
       }
+
+      const token = generateAccessToken({ id: user.id });
+
       return res.status(200).send({
         status: 'success',
         message: 'your credentials is valid',
-        data: user,
+        data: {
+          user: {
+            fullName: user.fullName,
+            email: user.email,
+            token,
+          },
+        },
       });
     }
 
@@ -106,7 +121,8 @@ exports.login = async (req, res) => {
       status: 'error',
       message: 'resource doesn\'t exist',
     });
-  } catch (e) {
+  } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: 'error',
       message: 'internal server error',
