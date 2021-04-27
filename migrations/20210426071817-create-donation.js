@@ -2,21 +2,35 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('users', {
+    await queryInterface.createTable('donations', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      fullName: {
+      donateAmount: {
+        type: Sequelize.INTEGER,
+      },
+      status: {
         type: Sequelize.STRING,
       },
-      email: {
+      proofAttachment: {
         type: Sequelize.STRING,
       },
-      password: {
-        type: Sequelize.STRING,
+      donaturId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      fundId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'funds',
+          key: 'id',
+        },
       },
       createdAt: {
         allowNull: false,
@@ -32,6 +46,6 @@ module.exports = {
     });
   },
   down: async (queryInterface) => {
-    await queryInterface.dropTable('users');
+    await queryInterface.dropTable('donations');
   },
 };

@@ -10,7 +10,7 @@ exports.getUsers = async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: {
-        exclude: ['password', 'createdAt', 'updatedAt'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'],
       },
     });
     return res.status(200).send({
@@ -44,7 +44,7 @@ exports.getUser = async (req, res) => {
         id,
       },
       attributes: {
-        exclude: ['password', 'createdAt', 'updatedAt'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'],
       },
     });
     return res.status(200).send({
@@ -78,7 +78,7 @@ exports.updateUser = async (req, res) => {
         id,
       },
       attributes: {
-        exclude: ['password', 'createdAt', 'updatedAt'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'],
       },
     });
 
@@ -103,7 +103,7 @@ exports.updateUser = async (req, res) => {
         id,
       },
       attributes: {
-        exclude: ['password', 'createdAt', 'updatedAt'],
+        exclude: ['password', 'createdAt', 'updatedAt', 'deletedAt'],
       },
     });
     return res.status(200).send({
@@ -114,6 +114,7 @@ exports.updateUser = async (req, res) => {
       },
     });
   } catch (e) {
+    console.log(e);
     return res.status(500).send({
       status: 'error',
       message: 'internal server error',
